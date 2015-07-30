@@ -1,7 +1,6 @@
 library ldap_configuration;
 
 import 'dart:async';
-import 'package:dart_config/default_server.dart' as server_config;
 import 'package:logging/logging.dart';
 
 import 'ldap_connection.dart';
@@ -156,73 +155,6 @@ class LDAPConfiguration {
       // This occurs if the fromFile constructor was not used, or the settings
       // were loaded in a previous invocation of _load_values.
     } else {
-      // Load settings from file
-
-      if (_file_name == null || _file_entry == null) {
-        assert(false); // this should never happen: can't load from file
-        return;
-      }
-
-      var configMap = await server_config.loadConfig(_file_name);
-
-      var m = configMap[_file_entry];
-
-      if (m == null) {
-        throw new LDAPException("${_file_name}: missing \"${_file_entry}\"");
-      }
-      if (!(m is Map)) {
-        throw new LDAPException(
-            "${_file_name}: \"${_file_entry}\" is not a map");
-      }
-
-      // Get and check the host
-
-      var host_value = m["host"];
-      if (host_value == null) {
-        throw new LDAPException(
-            "${_file_name}: \"${_file_entry}\" missing \"host\"");
-      }
-      if (!(host_value is String)) {
-        throw new LDAPException(
-            "${_file_name}: host in \"${_file_entry}\" is not a string");
-      }
-
-      // Get and check the port
-
-      var port_value = m["port"];
-      if (port_value != null && !(port_value is int)) {
-        throw new LDAPException(
-            "${_file_name}: port in \"${_file_entry}\" is not an int");
-      }
-
-      // Get and check the ssl
-
-      var ssl_value = m["ssl"];
-      if (ssl_value != null && !(ssl_value is bool)) {
-        throw new LDAPException(
-            "${_file_name}: ssl in \"${_file_entry}\" is not true/false");
-      }
-
-      // Get and check bindDN
-
-      var bindDN_value = m["bindDN"];
-      if (bindDN_value != null && !(bindDN_value is String)) {
-        throw new LDAPException(
-            "${_file_name}: bindDN in \"${_file_entry}\" is not a string");
-      }
-
-      // Get and check password
-
-      var password_value = m["password"];
-      if (password_value != null && !(password_value is String)) {
-        throw new LDAPException(
-            "${_file_name}: password in \"${_file_entry}\" is not a string");
-      }
-
-      this._setAll(
-          host_value, port_value, ssl_value, bindDN_value, password_value);
-
-      _file_load = false; // prevent future invocations from reloading it
     }
   }
 
