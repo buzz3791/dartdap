@@ -19,23 +19,13 @@ StreamTransformer<Uint8List, LDAPMessage> createTransformer() {
     if (leftover == null) {
       // No left over bytes from before: new data only
       buf = new Uint8List.view(data.buffer);
-      logger.fine("Bytes received: ${data.length}");
     } else {
       // There were left over bytes: leftover bytes + new data
       buf = new Uint8List(leftover.length + data.length);
       buf.setRange(0, leftover.length, leftover);
       buf.setRange(leftover.length, buf.length, data);
       leftover = null;
-      logger
-          .fine("Bytes received: ${data.length} (+${leftover.length} leftover)");
     }
-
-    if (Level.FINEST <= logger.level) {
-      // If statement prevents this potentially computationally expensive
-      // code to be executed if it is not needed.
-      logger.finest("Bytes received: ${data}");
-    }
-
     // Try to process the bytes, until there are not enough bytes left to form a
     // complete ASN1 object. Using a do-while loop because since this handleData
     // function was called, there will be at least some bytes to examine.
