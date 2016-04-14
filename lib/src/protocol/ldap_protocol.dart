@@ -6,7 +6,6 @@ import 'package:logging/logging.dart';
 
 import '../filter.dart';
 import '../ldap_exception.dart';
-import '../ldap_util.dart';
 import '../ldap_result.dart';
 import '../attribute.dart';
 import '../search_scope.dart';
@@ -87,4 +86,3 @@ String _op2String(int op) {
 }
 // common logger for ldap errors
 Logger logger = new Logger("ldap_protocol");
-
