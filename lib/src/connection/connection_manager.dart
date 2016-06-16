@@ -210,7 +210,11 @@ class ConnectionManager {
       (!_outgoingMessageQueue.isEmpty) && (_bindPending == false);
 
   // Send a single message to the server
-  _sendMessage(_PendingOp op) {
+  _sendMessage(_PendingOp op) async {
+    if (_socket == null) {
+      await connect();
+    }
+
     ldapLogger.fine("Sending message ${op.message}");
     var l = op.message.toBytes();
     _socket.add(l);
@@ -258,8 +262,13 @@ class ConnectionManager {
 
   Future _doClose() {
     ldapLogger.info("Closing ldap connection");
-    var f = _socket.close();
-    _socket = null;
+    var f = _socket.done;
+    new Future(() {
+      if (_socket != null) {
+        _socket.destroy();
+        _socket = null;
+      }
+    });
     return f;
   }
 
