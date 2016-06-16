@@ -262,6 +262,11 @@ class ConnectionManager {
 
   Future _doClose() {
     ldapLogger.info("Closing ldap connection");
+
+    if (_socket == null) {
+      return new Future.value();
+    }
+
     var f = _socket.done;
     new Future(() {
       if (_socket != null) {
