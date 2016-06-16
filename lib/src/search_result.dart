@@ -1,4 +1,4 @@
-library search_result;
+library ldap.search_result;
 
 import 'dart:async';
 import 'control/control.dart';

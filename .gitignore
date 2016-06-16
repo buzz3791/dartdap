@@ -6,4 +6,6 @@ test/data/output/
 extension/output/
 .pub
 .packages
-
+example/personal
+*.iml
+.idea

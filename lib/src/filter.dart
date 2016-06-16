@@ -1,4 +1,4 @@
-library filter;
+library ldap.filter;
 
 import 'ldap_exception.dart';
 import 'package:asn1lib/asn1lib.dart';
@@ -24,18 +24,21 @@ import 'ldap_util.dart';
 /// * [or] - matches if at least one of its member filters match
 
 class Filter {
-
   int _filterType;
+
   int get filterType => _filterType;
 
   // The assertion value for this filter.
   String _assertionValue;
+
   String get assertionValue => _assertionValue;
   String _attributeName;
+
   String get attributeName => _attributeName;
 
   // nested filters
   List<Filter> _subFilters = new List<Filter>();
+
   List<Filter> get subFilters => _subFilters;
 
   /**
@@ -49,10 +52,9 @@ class Filter {
   static const int TYPE_GREATER_OR_EQUAL = 0xA5;
   static const int TYPE_LESS_OR_EQUAL = 0xA6;
 
-  static const int TYPE_PRESENCE =  0x87;
+  static const int TYPE_PRESENCE = 0x87;
   static const int TYPE_APPROXIMATE_MATCH = 0xA8;
   static const int TYPE_EXTENSIBLE_MATCH = 0xA9;
-
 
   static const int EXTENSIBLE_TYPE_MATCHING_RULE_ID = 0x81;
   static const int EXTENSIBLE_TYPE_ATTRIBUTE_NAME = 0x82;
@@ -65,16 +67,20 @@ class Filter {
   /// [equals], [substring], [approx], [greaterOrEquals], [lessOrEquals])
   /// instead of directly using this constructor.
 
-  Filter(this._filterType, [this._attributeName, this._assertionValue, this._subFilters]);
+  Filter(this._filterType,
+      [this._attributeName, this._assertionValue, this._subFilters]);
 
   /// Creates a [Filter] that matches an entry that has an attribute with the given value.
-  static Filter equals(String attributeName, String attrValue) => new Filter(TYPE_EQUALITY, attributeName, attrValue);
+  static Filter equals(String attributeName, String attrValue) =>
+      new Filter(TYPE_EQUALITY, attributeName, attrValue);
 
   /// Creates a [Filter] that matches entries that matches all of the [filters].
-  static Filter and(List<Filter> filters) => new Filter(TYPE_AND, null, null, filters);
+  static Filter and(List<Filter> filters) =>
+      new Filter(TYPE_AND, null, null, filters);
 
   /// Creates a [Filter] that matches entries that matches at least one of the [filters].
-  static Filter or(List<Filter> filters) => new Filter(TYPE_OR, null, null, filters);
+  static Filter or(List<Filter> filters) =>
+      new Filter(TYPE_OR, null, null, filters);
 
   /// Creates a [Filter] that matches entries that don't match on [f].
   static Filter not(Filter f) => new Filter(TYPE_NOT, null, null, [f]);
@@ -93,28 +99,33 @@ class Filter {
 
   /// Creates a [Filter] that matches an entry that contains the [attributeName]
   /// with a value that is greater than or equal to [attrValue].
-  static Filter greaterOrEquals(String attributeName, String attrValue) => new Filter(TYPE_GREATER_OR_EQUAL, attributeName, attrValue);
+  static Filter greaterOrEquals(String attributeName, String attrValue) =>
+      new Filter(TYPE_GREATER_OR_EQUAL, attributeName, attrValue);
 
   /// Creates a [Filter] that matches an entry that contains the [attributeName]
   /// with a value that is less than or equal to [attrValue].
-  static Filter lessOrEquals(String attributeName, String attrValue) => new Filter(TYPE_LESS_OR_EQUAL, attributeName, attrValue);
+  static Filter lessOrEquals(String attributeName, String attrValue) =>
+      new Filter(TYPE_LESS_OR_EQUAL, attributeName, attrValue);
 
   /// Creates a [Filter] that matches an entry that contains the [attributeName]
   /// that approximately matches [attrValue].
-  static Filter approx(String attributeName, String attrValue) => new Filter(TYPE_APPROXIMATE_MATCH, attributeName, attrValue);
+  static Filter approx(String attributeName, String attrValue) =>
+      new Filter(TYPE_APPROXIMATE_MATCH, attributeName, attrValue);
 
   /// Operator version of the [and] filter factory method.
   Filter operator &(Filter other) => Filter.and([this, other]);
+
   /// Operator version of the [or] filter factory method.
   Filter operator |(Filter other) => Filter.or([this, other]);
 
-  String toString() => "Filter(type=$_filterType attrName=$_attributeName val=$_assertionValue, subFilters=$_subFilters)";
+  String toString() =>
+      "Filter(type=$_filterType attrName=$_attributeName val=$_assertionValue, subFilters=$_subFilters)";
 
   /**
-    * Convert a Filter expression to an ASN1 Object
-    *
-    * This may be called recursively
-    */
+   * Convert a Filter expression to an ASN1 Object
+   *
+   * This may be called recursively
+   */
   ASN1Object toASN1() {
     switch (filterType) {
       case Filter.TYPE_EQUALITY:
@@ -148,12 +159,10 @@ class Filter {
         throw "Not Done yet. Fix me!!";
 
       default:
-        throw new LDAPException("Unexpected filter type = $filterType. This should never happen");
-
+        throw new LDAPException(
+            "Unexpected filter type = $filterType. This should never happen");
     }
   }
-
-
 }
 
 /**
@@ -163,8 +172,10 @@ class Filter {
 class SubstringFilter extends Filter {
   /// BER type for initial part of string filter
   static const int TYPE_SUBINITIAL = 0x80;
+
   /// BER type for any part of string filter
   static const int TYPE_SUBANY = 0x81;
+
   /// BER type for final part of string filter
   static const int TYPE_SUBFINAL = 0x82;
 
@@ -172,17 +183,16 @@ class SubstringFilter extends Filter {
   List<String> _any = [];
   String _final;
 
-
   /** The initial substring filter component. Zero or one */
   String get initial => _initial;
+
   /** The list of "any" components. Zero or more */
   List<String> get any => _any;
+
   /** The final component. Zero or more */
   String get finalString => _final;
 
-
   SubstringFilter(String pattern) : super(Filter.TYPE_SUBSTRING) {
-
     // todo: We probaby need to properly escape special chars = and *
     var l = pattern.split("=");
     if (l.length != 2 || l[0] == "" || l[1] == "") {
@@ -224,17 +234,19 @@ class SubstringFilter extends Filter {
     var sSeq = new ASN1Sequence();
 
     if (initial != null) {
-      sSeq.add(new ASN1OctetString(initial, tag: SubstringFilter.TYPE_SUBINITIAL));
+      sSeq.add(
+          new ASN1OctetString(initial, tag: SubstringFilter.TYPE_SUBINITIAL));
     }
-    any.forEach((String o) => sSeq.add(new ASN1OctetString(o, tag: SubstringFilter.TYPE_SUBANY)));
+    any.forEach((String o) =>
+        sSeq.add(new ASN1OctetString(o, tag: SubstringFilter.TYPE_SUBANY)));
     if (finalString != null) {
-      sSeq.add(new ASN1OctetString(finalString, tag: SubstringFilter.TYPE_SUBFINAL));
+      sSeq.add(
+          new ASN1OctetString(finalString, tag: SubstringFilter.TYPE_SUBFINAL));
     }
     seq.add(sSeq);
     return seq;
   }
 
-
-  String toString() => "SubstringFilter(_init=$_initial, any=$_any, fin=$_final)";
-
+  String toString() =>
+      "SubstringFilter(_init=$_initial, any=$_any, fin=$_final)";
 }

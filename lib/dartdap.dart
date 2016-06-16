@@ -13,7 +13,7 @@
 /// See the [LDAPConfiguration] class for examples of how to connect to an LDAP
 /// server.
 
-library ldapclient;
+library ldap.client;
 
 export 'src/ldap_connection.dart';
 export 'src/ldap_exception.dart';
@@ -27,3 +27,4 @@ export 'src/ldap_configuration.dart';
 export 'src/sort_key.dart';
 export 'src/control/control.dart';
 export 'src/search_result.dart';
+export 'common.dart';

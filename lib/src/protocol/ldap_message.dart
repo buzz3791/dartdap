@@ -1,4 +1,4 @@
-part of ldap_protocol;
+part of ldap.protocol;
 
 /**
  * Envelope for LDAP message protocol exchange
@@ -6,39 +6,38 @@ part of ldap_protocol;
  * See http://tools.ietf.org/html/rfc4511
  *
  *   LDAPMessage ::=
-         SEQUENCE {
-              messageID      MessageID,
-              protocolOp     CHOICE {
-                                  bindRequest         BindRequest,
-                                  bindResponse        BindResponse,
-                                  unbindRequest       UnbindRequest,
-                                  searchRequest       SearchRequest,
-                                  searchResEntry      SearchResultEntry,
-                                  searchResDone       SearchResultDone,
-                                  searchResRef        SearchResultReference,
-                                  modifyRequest       ModifyRequest,
-                                  modifyResponse      ModifyResponse,
-                                  addRequest          AddRequest,
-                                  addResponse         AddResponse,
-                                  delRequest          DelRequest,
-                                  delResponse         DelResponse,
-                                  modifyDNRequest     ModifyDNRequest,
-                                  modifyDNResponse    ModifyDNResponse,
-                                  compareRequest      CompareRequest,
-                                  compareResponse     CompareResponse,
-                                  abandonRequest      AbandonRequest,
-                                  extendedRequest     ExtendedRequest,
-                                  extendedResponse    ExtendedResponse,
-                                  ...,
-                                  intermediateResponse IntermediateResponse
-                             },
-              controls       [0] Controls OPTIONAL
-         }
+  SEQUENCE {
+  messageID      MessageID,
+  protocolOp     CHOICE {
+  bindRequest         BindRequest,
+  bindResponse        BindResponse,
+  unbindRequest       UnbindRequest,
+  searchRequest       SearchRequest,
+  searchResEntry      SearchResultEntry,
+  searchResDone       SearchResultDone,
+  searchResRef        SearchResultReference,
+  modifyRequest       ModifyRequest,
+  modifyResponse      ModifyResponse,
+  addRequest          AddRequest,
+  addResponse         AddResponse,
+  delRequest          DelRequest,
+  delResponse         DelResponse,
+  modifyDNRequest     ModifyDNRequest,
+  modifyDNResponse    ModifyDNResponse,
+  compareRequest      CompareRequest,
+  compareResponse     CompareResponse,
+  abandonRequest      AbandonRequest,
+  extendedRequest     ExtendedRequest,
+  extendedResponse    ExtendedResponse,
+  ...,
+  intermediateResponse IntermediateResponse
+  },
+  controls       [0] Controls OPTIONAL
+  }
  *
  *
  */
 class LDAPMessage {
-
   int _messageId;
   int _protocolTag;
 
@@ -46,6 +45,7 @@ class LDAPMessage {
 
   ASN1Sequence _protocolOp;
   ASN1Sequence _controls;
+
   //ASN1Sequence _obj;
   ASN1Object _obj;
 
@@ -58,8 +58,9 @@ class LDAPMessage {
   int get messageId => _messageId;
 
   ASN1Sequence get controls => _controls;
+
   // True if this message has LDAP controls
-   bool get hasControls => _controls != null;
+  bool get hasControls => _controls != null;
 
   /// return the [ASN1Sequence] that makes up this LDAP message
   ASN1Sequence get protocolOp => _protocolOp;
@@ -67,21 +68,19 @@ class LDAPMessage {
   /// the total length of this encoded message in bytes
   int get messageLength => _obj.totalEncodedByteLength;
 
-
-  LDAPMessage(this._messageId,RequestOp rop,[List<Control> controls = null]) {
+  LDAPMessage(this._messageId, RequestOp rop, [List<Control> controls = null]) {
     _protocolTag = rop.protocolOpCode;
     _obj = rop.toASN1();
-    if( controls != null && controls.length > 0) {
-      _controls = new ASN1Sequence(tag:CONTROLS);
+    if (controls != null && controls.length > 0) {
+      _controls = new ASN1Sequence(tag: CONTROLS);
       controls.forEach((control) {
-        _controls.add( control.toASN1());
-        logger.finest("adding control $control");
+        _controls.add(control.toASN1());
+        ldapLogger.finest("adding control $control");
       });
     }
 
     String toString() =>
         "LDAPMessage(id=$_messageId $protocolOp controls=$_controls";
-
   }
 
   /// Constructs an LDAP message from list of raw bytes.
@@ -89,8 +88,9 @@ class LDAPMessage {
   LDAPMessage.fromBytes(Uint8List bytes) {
     _obj = new ASN1Sequence.fromBytes(bytes);
 
-    checkCondition(_obj !=null,"Parsing error on ${bytes}");
-    checkCondition(elements.length == 2 || elements.length == 3, "Expecting two or three elements.actual = ${elements.length} obj=$_obj");
+    checkCondition(_obj != null, "Parsing error on ${bytes}");
+    checkCondition(elements.length == 2 || elements.length == 3,
+        "Expecting two or three elements.actual = ${elements.length} obj=$_obj");
 
     var i = elements[0] as ASN1Integer;
     _messageId = i.intValue;
@@ -100,39 +100,34 @@ class LDAPMessage {
     _protocolTag = _protocolOp.tag;
 
     // Check if message has controls....
-    if( elements.length == 3) {
+    if (elements.length == 3) {
       var c = elements[2].encodedBytes;
-      if( c[0] == Control.CONTROLS_TAG )
+      if (c[0] == Control.CONTROLS_TAG)
         _controls = new ASN1Sequence.fromBytes(c);
     }
-    logger.fine("Got LDAP Message. Id = ${messageId} protocolOp = ${protocolOp}");
-
+    ldapLogger
+        .fine("Got LDAP Message. Id = ${messageId} protocolOp = ${protocolOp}");
   }
-
 
   // Convert this LDAP message to a stream of ASN1 encoded bytes
   List<int> toBytes() {
-
     //logger.finest("Converting this object to bytes ${toString()}");
     ASN1Sequence seq = new ASN1Sequence();
 
-    seq.add( new ASN1Integer(_messageId));
+    seq.add(new ASN1Integer(_messageId));
 
     seq.add(_obj);
-    if( _controls != null)
-      seq.add(_controls);
+    if (_controls != null) seq.add(_controls);
 
     var b = seq.encodedBytes;
 
     //var xx = LDAPUtil.toHexString(b);
     //logger.finest("LdapMesssage bytes = ${xx}");
     return b;
-
   }
 
   String toString() {
     var s = _op2String(_protocolTag);
     return "Msg(id=${_messageId}, op=${s},controls=$_controls)";
   }
-
 }

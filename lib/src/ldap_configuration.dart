@@ -1,16 +1,11 @@
-library ldap_configuration;
+library ldap.configuration;
 
 import 'dart:async';
-import 'package:logging/logging.dart';
+
+import 'package:dartdap/common.dart';
 
 import 'ldap_connection.dart';
 import 'ldap_exception.dart';
-
-/// Logger for the LDAP client library.
-///
-/// The logger name is "ldap_configuration".
-
-Logger logger = new Logger("ldap_configuration");
 
 /// A LDAP configuration settings and a LDAP connection created from it.
 ///
@@ -26,7 +21,6 @@ Logger logger = new Logger("ldap_configuration");
 /// * Loading the settings from a YAML file using the fromFile constructor.
 
 class LDAPConfiguration {
-
   // Constants
 
   static const String _DEFAULT_HOST = "localhost";
@@ -52,13 +46,21 @@ class LDAPConfiguration {
 
   // File details (only set if object created by the fromFile constructor)
 
-  bool _file_load; // true if settings need to be loaded from file
-  String _file_name; // file containing settings
-  String _file_entry; // name of map in the YAML settings file
+  bool _file_load;
+
+  // true if settings need to be loaded from file
+  String _file_name;
+
+  // file containing settings
+  String _file_entry;
+
+  // name of map in the YAML settings file
 
   // Cached connection
 
-  LDAPConnection _connection; // null if not created
+  LDAPConnection _connection;
+
+  // null if not created
 
   // Set values
   //
@@ -154,8 +156,7 @@ class LDAPConfiguration {
       // File does not need to be loaded: settings are already set
       // This occurs if the fromFile constructor was not used, or the settings
       // were loaded in a previous invocation of _load_values.
-    } else {
-    }
+    } else {}
   }
 
   /// Return a Future<[LDAPConnection]> using this configuration.
@@ -184,7 +185,7 @@ class LDAPConfiguration {
 
     // Connect
 
-    logger.info(this.toString());
+    ldapLogger.info(this.toString());
 
     _connection = new LDAPConnection(host, port, ssl, bindDN, password);
     await _connection.connect();
@@ -215,6 +216,8 @@ class LDAPConfiguration {
   /// Returns a string representation of this object.
 
   String toString() {
-    return "${ssl ? "ldaps://" : "ldap://"}${host}:${port}${(bindDN != null) ? "/${bindDN}" : ""}";
+    return "${ssl ? "ldaps://" : "ldap://"}${host}:${port}${(bindDN != null)
+      ? "/${bindDN}"
+      : ""}";
   }
 }

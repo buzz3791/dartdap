@@ -1,4 +1,4 @@
-library search_scope;
+library ldap.search_scope;
 
 class SearchScope {
   static const int BASE_LEVEL = 0;

@@ -1,8 +1,10 @@
+library ldap.protocol_transformer;
+
 import 'dart:async';
 
 import 'dart:typed_data';
 import '../protocol/ldap_protocol.dart';
-import 'package:logging/logging.dart';
+import 'package:dartdap/common.dart';
 
 /// Returns a [StreamTransformer<Uint8List,LDAPMessage>] that transform a stream
 /// of bytes to a stream of LDAP messages.
@@ -65,16 +67,13 @@ StreamTransformer<Uint8List, LDAPMessage> createTransformer() {
 
         var message_size = (1 + length_size + value_size); // tag, length, data
 
-        logger.finer("Bytes parsed for ASN.1 object: $message_size");
-        logger
-            .fine("ASN.1 object received: tag=${buf[0]}, length=${value_size}");
-        logger.finest(
-            "ASN.1 value: ${new Uint8List.view(buf.buffer, 1 + length_size, value_size)}");
+        ldapLogger.finer("Bytes parsed for ASN.1 object: $message_size");
+        ldapLogger.fine("ASN.1 object received: tag=${buf[0]}, length=${value_size}");
+        ldapLogger.finest("ASN.1 value: ${new Uint8List.view(
+              buf.buffer, 1 + length_size, value_size)}");
 
         if (buf[0] == 10) {
-          // TODO: debug why this tag is not being parsed properly
-          logger
-              .warning("LDAP stream transformer: got a tag 10 object");
+          ldapLogger.warning("LDAP stream transformer: got a tag 10 object");
         }
 
         // Create LDAPMessage from all the bytes of the complete ASN1 object.
@@ -111,8 +110,7 @@ StreamTransformer<Uint8List, LDAPMessage> createTransformer() {
     // Otherwise, it contains the remaining bytes to be processed when more
     // bytes are received.
   }, handleError: (Object error, StackTrace st, EventSink<LDAPMessage> sink) {
-    logger
-        .severe("LDAP stream transformer: error=${error}, stacktrace=${st}");
+    ldapLogger.severe("LDAP stream transformer: error=${error}, stacktrace=${st}");
     assert(false);
     throw error;
   });
