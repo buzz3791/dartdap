@@ -80,7 +80,7 @@ class _StreamPendingOp extends _PendingOp {
 // A pending opertion that expects a single return response message
 // returned via a future. For all LDAP ops except search results
 class _FuturePendingOp extends _PendingOp {
-  var completer = new Completer();
+  Completer completer = new Completer();
 
   _FuturePendingOp(LDAPMessage m) : super(m);
 
@@ -128,7 +128,6 @@ class ConnectionManager {
   // TIMEOUT when waiting for a pending op to come back from the server.
   static const PENDING_OP_TIMEOUT = const Duration(seconds: 3);
 
-  //
   bool _bindPending = false;
 
   // true if a BIND is pending
@@ -150,11 +149,10 @@ class ConnectionManager {
 
   Future<ConnectionManager> connect() async {
     ldapLogger.finest("Creating socket to ${_host}:${_port} ssl=$_ssl");
-    var s = (_ssl
+    _socket = await (_ssl
         ? SecureSocket.connect(_host, _port, onBadCertificate: _badCertHandler)
         : Socket.connect(_host, _port));
 
-    _socket = await s;
     ldapLogger.fine("Connected to $_host:$_port");
     _socket.transform(createTransformer()).listen((m) => _handleLDAPMessage(m),
         onError: (error, stacktrace) {
@@ -182,11 +180,11 @@ class ConnectionManager {
   }
 
   // Process a generic LDAP operation.
-  Future<LDAPResult> process(RequestOp rop) {
+  Future<LDAPResult> process(RequestOp rop) async {
     var m = new LDAPMessage(++_nextMessageId, rop);
     var op = new _FuturePendingOp(m);
     _queueOp(op);
-    return op.completer.future;
+    return await op.completer.future;
   }
 
   _queueOp(_PendingOp op) {
